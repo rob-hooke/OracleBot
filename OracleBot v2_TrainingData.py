@@ -11,7 +11,7 @@ import pandas as pd
 timeframes = ['2015-05']
 
 for timeframe in timeframes:
-    connection =  sqlite3.connect('{}.db'.format(timeframe))
+    connection =  sqlite3.connect('2015-05.db'.format(timeframe))
     c = connection.cursor()
     limit = 5000    #No of data fethed from sql db
     last_unix = 0   #help in buffer through database

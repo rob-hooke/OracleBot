@@ -9,7 +9,7 @@ import json
 import sqlite3
 from datetime import datetime
 
-timeframe = '2015-01'
+timeframe = '2015-05'
 sql_transaction = []
 connection = sqlite3.connect('{}.db'.format(timeframe))
 
@@ -58,21 +58,21 @@ def acceptable(data):
 
 def sql_inser_replace_comment(commentid, parentid, parent,comment,subreddit,time,score):
     try:
-        sql = """ update parent_reply set parent_id = ?, comment_id = ?, parent = ?, comment = ?, subreddit = ?, unix = ?, score = ? where parent_id =  ?:""".format(parentid,commentid,parent,comment,subreddit,time,score)
+        sql = """ update parent_reply set parent_id = "{}", comment_id = "{}", parent = '{}', comment = '{}', subreddit = '{}', unix = '{}', score = '{}' where parent_id =  ?:""".format(parentid,commentid,parent,comment,subreddit,time,score)
         transaction_bldr(sql)
     except Exception as e:
         print('replace comment', str(e))
 
 def sql_insert_has_parent(commentid, parentid, parent,comment, subreddit, time, score):
     try:
-        sql = """insert into parent_reply (parent_id, comment_id, parent, comment, subreddit, unix, score) values ("{}","{}","{}","{}","{}","{}","{}",)""".format(parentid, commentid, parent,comment, subreddit, time, score)
+        sql = """insert into parent_reply (parent_id, comment_id, parent, comment, subreddit, unix, score) values ('{}','{}','{}','{}','{}','{}','{}')""".format(parentid, commentid, parent,comment, subreddit, time, score)
         transaction_bldr(sql)
     except Exception as e:
         print(' ',str(e))
 
 def sql_insert_no_parent(commentid, parentid, comment, subreddit, time, score):
     try:
-        sql = """insert into parent_reply (parent_id, comment_id, comment, subreddit, unix, score) values ("{}","{}","{}","{}","{}","{}",)""".format(parentid, commentid, comment, subreddit, time, score)
+        sql = """insert into parent_reply (parent_id, comment_id, comment, subreddit, unix, score) values ('{}','{}','{}','{}','{}','{}')""".format(parentid, commentid, comment, subreddit, time, score)
         transaction_bldr(sql)
     except Exception as e:
         print(' ',str(e))
@@ -99,10 +99,16 @@ if __name__ == "__main__":
     row_counter = 0     #Itertae rows no
     paired_rows = 0
     
-    with open("F:/GitHub/OracleBot/RC_2015-01/RC_{}".format(timeframe), buffering = 1000) as f:
+    with open('F:/GitHub/OracleBot/RC_{}/RC_{}'.format(timeframe,timeframe), buffering = 1000) as f:
         for row in f:
+            #print (row)
+            #print('1')
+            #row.encode('utf-8').strip()
+            #print('2')
             row_counter += 1
+            #print('AAAAAAA')
             row = json.loads(row)
+            #print('XXXXXXX')
             parent_id = row['parent_id']
             comment_id = row['name']
             body = format_data(row['body'])
@@ -117,13 +123,14 @@ if __name__ == "__main__":
                     if existing_comment_score:
                         if score > existing_comment_score:
                             sql_inser_replace_comment(comment_id, parent_id, parent_data ,body, subreddit, created_utc, score)
-                            
+                            #print('1')
                     else:
                         if parent_data:
                             sql_insert_has_parent(comment_id, parent_id, parent_data, body, subreddit, created_utc, score)
                             paired_rows += 1
+                            #print('2')
                         else:
                             sql_insert_no_parent(comment_id, parent_id, body, subreddit, created_utc, score)
-                            
+                            #print('3')
             if row_counter % 100000 == 0:
                 print("Total rows read: {}. paired rows: {}, time: {}".format(row_counter, paired_rows, str(datetime.now)))
